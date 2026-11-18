@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>QR Code Generator</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    #qrcode {
+      margin: 25px auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    #message {
+      color: #b00020;
+      margin-top: 10px;
+    }
+
+    #downloadButton {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>QR Code Generator</h1>
+
+  <p>Enter a website or link:</p>
+
+  <input
+    type="url"
+    id="urlInput"
+    placeholder="https://example.com"
+  >
+
+  <button type="button" id="generateButton">
+    Generate QR Code
+  </button>
+
+  <div id="message"></div>
+
+  <div id="qrcode"></div>
+
+  <button type="button" id="downloadButton">
+    Download QR Code
+  </button>
+
+
+  <script src="qrcode.min.js"></script>
+
+  <script>
+    const input = document.getElementById("urlInput");
+    const qrContainer = document.getElementById("qrcode");
+    const generateButton = document.getElementById("generateButton");
+    const downloadButton = document.getElementById("downloadButton");
+    const message = document.getElementById("message");
+
+    function generateQRCode() {
+      const value = input.value.trim();
+
+      message.textContent = "";
+      qrContainer.innerHTML = "";
+      downloadButton.style.display = "none";
+
+      if (!value) {
+        message.textContent = "Please enter a link.";
+        return;
+      }
+
+      let parsedURL;
+
+      try {
+        parsedURL = new URL(value);
+      } catch {
+        message.textContent =
+          "Please enter a complete URL, such as https://example.com";
+        return;
+      }
+
+      if (
+        parsedURL.protocol !== "https:" &&
+        parsedURL.protocol !== "http:"
+      ) {
+        message.textContent =
+          "Please enter an HTTP or HTTPS link.";
+        return;
+      }
+
+      new QRCode(qrContainer, {
+        text: value,
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      downloadButton.style.display = "inline-block";
+    }
+
+    function downloadQRCode() {
+      const canvas = qrContainer.querySelector("canvas");
+      const image = qrContainer.querySelector("img");
+
+      const link = document.createElement("a");
+      link.download = "qr-code.png";
+
+      if (canvas) {
+        link.href = canvas.toDataURL("image/png");
+      } else if (image) {
+        link.href = image.src;
+      } else {
+        message.textContent =
+          "Generate a QR code before downloading.";
+        return;
+      }
+
+      link.click();
+    }
+
+    generateButton.addEventListener("click", generateQRCode);
+    downloadButton.addEventListener("click", downloadQRCode);
+
+    input.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        generateQRCode();
+      }
+    });
+  </script>
+
+</body>
+</html>
